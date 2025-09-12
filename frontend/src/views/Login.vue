@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { useLoginMutation } from '@/data/mutations/login'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
@@ -24,8 +25,14 @@ const form = useForm({
 })
 
 const router = useRouter()
+const { mutateAsync: login } = useLoginMutation()
 
-const onSubmit = form.handleSubmit((values) => {
+const onSubmit = form.handleSubmit(async (values) => {
+  await login({
+    email: values.email,
+    password: values.password,
+  })
+
   router.push({ name: 'board' })
 })
 </script>
