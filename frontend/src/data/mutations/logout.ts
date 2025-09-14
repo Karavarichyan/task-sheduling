@@ -11,7 +11,7 @@ export const useLogoutMutation = () => {
     },
     onSuccess: () =>{
       queryClient.clear()
-      router.push('/login')
+     
     }
   })
 }
