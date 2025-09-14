@@ -1,0 +1,12 @@
+- loader for side bar user +++
+- redirect guest from dashboard to login
+- redirect user from login to board
+- users page add user
+- user page table
+- user page search user
+- user page activate deactivate
+- board page create task
+- board page todo in progress completed
+- board page search and filter tasks
+- board page edit task
+- board page delete task
