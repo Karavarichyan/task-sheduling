@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ChevronsUpDown, Loader2, LogOut } from 'lucide-vue-next';
-import { useLogoutMutation } from '@/data/mutations/logout'; 
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,17 +6,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useUserQuery } from '@/data/queries/user';
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '../ui/sidebar';
+} from '@/components/ui/dropdown-menu'
+import { useLogoutMutation } from '@/data/mutations/logout'
+import { useUserQuery } from '@/data/queries/user'
+import { ChevronsUpDown, Loader2, LogOut } from 'lucide-vue-next'
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '../ui/sidebar'
 
-const { data: user, isLoading } = useUserQuery();
-const { isMobile } = useSidebar();
-const { mutate: logout, isPending } = useLogoutMutation();
+const { data: user, isLoading } = useUserQuery()
+const { isMobile } = useSidebar()
+const { mutate: logout, isPending } = useLogoutMutation()
 
 const handleLogout = () => {
-  logout();
-};
+  logout()
+}
 </script>
 
 <template>
@@ -58,14 +58,9 @@ const handleLogout = () => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem @click="handleLogout" :disabled="isPending">
-            <template v-if="isPending">
-              <Loader2 class="mr-2 h-4 w-4 animate-spin" />
-              <span>Log out</span>
-            </template>
-            <template v-else>
-              <LogOut class="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </template>
+            <Loader2 v-if="isPending" class="mr-2 h-4 w-4 animate-spin" />
+            <LogOut v-else class="mr-2 h-4 w-4" />
+            <span>Log out</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
