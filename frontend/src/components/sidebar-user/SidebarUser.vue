@@ -10,19 +10,17 @@ import {
 import { useLogoutMutation } from '@/data/mutations/logout'
 import { useUserQuery } from '@/data/queries/user'
 import { ChevronsUpDown, Loader2, LogOut } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '../ui/sidebar'
-import router from '@/router'
 
 const { data: user, isLoading } = useUserQuery()
 const { isMobile } = useSidebar()
 const { mutate: logout, isPending } = useLogoutMutation()
+const router = useRouter()
 
 const handleLogout = () => {
-  logout(undefined, {
-    onSuccess: () => {
-      router.push('/login') 
-    },
-  })
+  logout()
+  router.push({ name: 'login' })
 }
 </script>
 

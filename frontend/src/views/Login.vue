@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import GuestGuard from '@/components/guest-guard/GuestGuard.vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -38,35 +39,37 @@ const onSubmit = form.handleSubmit(async (values) => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-background p-4">
-    <Card class="w-full max-w-md">
-      <CardHeader class="space-y-1">
-        <CardTitle class="text-2xl font-bold text-center">Task Scheduler</CardTitle>
-        <CardDescription class="text-center">Sign in to your admin dashboard</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form class="space-y-4" @submit="onSubmit">
-          <FormField v-slot="{ componentField }" name="email">
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input type="email" required v-bind="componentField" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          </FormField>
-          <FormField v-slot="{ componentField }" name="password">
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input type="password" required v-bind="componentField" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          </FormField>
-          <Button type="submit"> Submit </Button>
-        </form>
-      </CardContent>
-    </Card>
-  </div>
+  <GuestGuard>
+    <div class="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card class="w-full max-w-md">
+        <CardHeader class="space-y-1">
+          <CardTitle class="text-2xl font-bold text-center">Task Scheduler</CardTitle>
+          <CardDescription class="text-center">Sign in to your admin dashboard</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form class="space-y-4" @submit="onSubmit">
+            <FormField v-slot="{ componentField }" name="email">
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" required v-bind="componentField" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            </FormField>
+            <FormField v-slot="{ componentField }" name="password">
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input type="password" required v-bind="componentField" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            </FormField>
+            <Button type="submit"> Submit </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  </GuestGuard>
 </template>

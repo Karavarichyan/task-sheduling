@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import AuthGuard from '@/components/auth-guard/AuthGuard.vue'
 import SidebarUser from '@/components/sidebar-user/SidebarUser.vue'
 import {
   Sidebar,
@@ -31,31 +32,33 @@ const items = [
 </script>
 
 <template>
-  <SidebarProvider>
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem v-for="item in items" :key="item.title">
-                <SidebarMenuButton asChild>
-                  <RouterLink :to="item.to">
-                    <component :is="item.icon" />
-                    {{ item.title }}</RouterLink
-                  >
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <SidebarUser />
-      </SidebarFooter>
-    </Sidebar>
-    <SidebarInset>
-      <RouterView />
-    </SidebarInset>
-  </SidebarProvider>
+  <AuthGuard>
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Application</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem v-for="item in items" :key="item.title">
+                  <SidebarMenuButton asChild>
+                    <RouterLink :to="item.to">
+                      <component :is="item.icon" />
+                      {{ item.title }}</RouterLink
+                    >
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarUser />
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+        <RouterView />
+      </SidebarInset>
+    </SidebarProvider>
+  </AuthGuard>
 </template>

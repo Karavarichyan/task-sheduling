@@ -1,17 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { useRouter } from 'vue-router'
 
 export const useLogoutMutation = () => {
   const queryClient = useQueryClient()
-  const router = useRouter()
 
   return useMutation({
-    mutationFn:async () =>{
-      localStorage.removeItem('token')
+    mutationFn: async () => {
+      localStorage.removeItem('user')
     },
-    onSuccess: () =>{
-      queryClient.clear()
-     
-    }
+    onSuccess: () => {
+      queryClient.setQueryData(['user'], null)
+    },
   })
 }
