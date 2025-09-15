@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ChevronsUpDown, LogOut } from 'lucide-vue-next'
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,11 +7,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useLogoutMutation } from '@/data/mutations/logout'
 import { useUserQuery } from '@/data/queries/user'
+import { ChevronsUpDown, Loader2, LogOut } from 'lucide-vue-next'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '../ui/sidebar'
+import router from '@/router'
 
-const { data: user } = useUserQuery()
+const { data: user, isLoading } = useUserQuery()
 const { isMobile } = useSidebar()
+const { mutate: logout, isPending } = useLogoutMutation()
+
+const handleLogout = () => {
+  logout(undefined, {
+    onSuccess: () => {
+      router.push('/login') 
+    },
+  })
+}
 </script>
 
 <template>
@@ -25,9 +35,16 @@ const { isMobile } = useSidebar()
             size="lg"
             class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
-            <div class="grid flex-1 text-left text-sm leading-tight">
+            <div
+              v-if="isLoading"
+              class="flex flex-1 items-center justify-center text-left text-sm leading-tight"
+            >
+              <Loader2 class="h-4 w-4 animate-spin text-blue-500" />
+            </div>
+            <div v-else class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-semibold">{{ user?.email }}</span>
             </div>
+
             <ChevronsUpDown class="ml-auto size-4" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
@@ -45,9 +62,10 @@ const { isMobile } = useSidebar()
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <LogOut />
-            Log out
+          <DropdownMenuItem @click="handleLogout" :disabled="isPending">
+            <Loader2 v-if="isPending" class="mr-2 h-4 w-4 animate-spin" />
+            <LogOut v-else class="mr-2 h-4 w-4" />
+            <span>Log out</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
