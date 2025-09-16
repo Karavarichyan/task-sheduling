@@ -1,10 +1,3 @@
-<script lang="ts" setup>
-import UserManagement from '../components/UserManagement/UserManagement.vue';
-</script>
+<script lang="ts" setup></script>
 
-<template>
-  <div>
-    users
-    <UserManagement />
-  </div>
-</template>
+<template><div>users</div></template>
