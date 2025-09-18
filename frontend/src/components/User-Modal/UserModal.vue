@@ -2,105 +2,84 @@
   <Dialog :open="isOpen" @update:open="$emit('close')">
     <DialogContent class="sm:max-w-[600px]">
       <DialogHeader>
-        <DialogTitle>Create New Task</DialogTitle>
-        <DialogDescription> Fill in the details to create a new task. </DialogDescription>
+        <DialogTitle>Add New Team Member</DialogTitle>
+        <DialogDescription>Fill in the details to add a new team member.</DialogDescription>
       </DialogHeader>
 
       <form @submit.prevent="handleSubmit" class="space-y-6">
-        <div class="grid grid-cols-1 gap-4">
+        <h2 class="text-lg font-semibold border-b pb-2">Personal Information</h2>
+        <div class="space-y-4">
           <div class="space-y-2">
-            <Label for="title">Task Title *</Label>
-            <Input id="title" placeholder="Enter task title" v-model="formData.title" required />
-          </div>
-
-          <div class="space-y-2">
-            <Label for="description">Description *</Label>
-            <Textarea
-              id="description"
-              placeholder="Describe the task in detail"
-              v-model="formData.description"
-              rows="3"
-              required
-            />
+            <Label for="fullName">Full Name *</Label>
+            <Input id="fullName" placeholder="Enter full name" v-model="formData.fullName" required />
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="space-y-2">
-              <Label for="assignee">Assign To *</Label>
-              <Select v-model="formData.assignee">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select team member" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="John Smith">John Smith</SelectItem>
-                  <SelectItem value="Sarah Johnson">Sarah Johnson</SelectItem>
-                  <SelectItem value="Mike Davis">Mike Davis</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label for="email">Email Address *</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="user@company.com"
+                v-model="formData.email"
+                required
+              />
             </div>
-
             <div class="space-y-2">
-              <Label for="priority">Priority</Label>
-              <Select v-model="formData.priority">
-                <SelectTrigger>
-                  <div class="flex items-center gap-2">
-                    <div
-                      :class="getPriorityColor(formData.priority)"
-                      class="w-2 h-2 rounded-full"
-                    ></div>
-                    <span>{{ getPriorityText(formData.priority) }}</span>
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">
-                    <div class="flex items-center gap-2">
-                      <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                      Low Priority
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="medium">
-                    <div class="flex items-center gap-2">
-                      <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
-                      Medium Priority
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="high">
-                    <div class="flex items-center gap-2">
-                      <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                      High Priority
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <Label for="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+1 (555) 123-4567"
+                v-model="formData.phone"
+              />
             </div>
-          </div>
-
-          <div class="space-y-2">
-            <Label>Due Date *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" class="w-full justify-start text-left font-normal">
-                  <CalendarIcon class="mr-2 h-4 w-4" />
-                  <span>{{ formData.dueDate ? formData.dueDate.toString() : 'Pick a date' }}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent class="w-auto p-0" align="start">
-                <Calendar mode="single" v-model="formData.dueDate as DateValue | undefined" />
-              </PopoverContent>
-            </Popover>
           </div>
         </div>
 
+        <h2 class="text-lg font-semibold border-b pb-2">Work Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <Label for="department">Department *</Label>
+            <Select v-model="formData.department" required> <SelectTrigger>
+                <SelectValue placeholder="Select department" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="engineering">Engineering</SelectItem>
+                <SelectItem value="marketing">Marketing</SelectItem>
+                <SelectItem value="sales">Sales</SelectItem>
+                <SelectItem value="it_support">IT Support</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div class="space-y-2">
+            <Label for="role">Role *</Label>
+            <Select v-model="formData.role" :disabled="!formData.department" required>
+              <SelectTrigger>
+                <SelectValue :placeholder="formData.department ? 'Select role' : 'Select department first'" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="developer">Developer</SelectItem>
+                <SelectItem value="manager">Manager</SelectItem>
+                <SelectItem value="analyst">Analyst</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <h2 class="text-lg font-semibold border-b pb-2">Availability</h2>
+        <div class="flex items-center justify-between">
+          <div>
+            <Label>Currently Available</Label>
+            <p class="text-sm text-gray-500">Toggle to set initial availability status</p>
+          </div>
+          <Switch v-model:checked="formData.isAvailable" />
+        </div>
+
         <div class="flex justify-end space-x-3 pt-4 border-t">
-          <Button type="button" variant="outline" @click="$emit('close')" class="hover:bg-blue-500">
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            class="bg-gray-400 text-white hover:bg-gray-300"
-            :disabled="isPending"
-          >
-            {{ isPending ? 'Saving...' : 'Create Task' }}
+          <Button type="button" variant="outline" @click="$emit('close')">Cancel</Button>
+          <Button type="submit" :disabled="isPending || !isFormValid" class="bg-blue-600 text-white hover:bg-blue-700">
+             {{ isPending ? 'Adding Member...' : 'Add Team Member' }}
           </Button>
         </div>
       </form>
@@ -110,7 +89,6 @@
 
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
 import {
   Dialog,
   DialogContent,
@@ -120,7 +98,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -128,12 +105,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { useSaveTaskMutation } from '@/data/mutations/useSaveTaskMutation'
-import type { DateValue } from '@internationalized/date'
-import { CalendarIcon } from 'lucide-vue-next'
-import { reactive } from 'vue'
-
+import { Switch } from '@/components/ui/switch'
+import { reactive, computed } from 'vue'
+import { useSaveTeamMemberMutation } from '@/data/mutations/useSaveTeamMemberMutation'
 const props = defineProps<{
   isOpen: boolean
 }>()
@@ -141,54 +115,44 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 
 const initialFormData = {
-  title: '',
-  description: '',
-  assignee: '',
-  priority: 'medium',
-  dueDate: undefined as DateValue | undefined,
+  fullName: '',
+  email: '',
+  phone: '',
+  department: '',
+  role: '',
+  isAvailable: true,
 }
 
 const formData = reactive({ ...initialFormData })
 
-const { mutate: saveTask, isPending } = useSaveTaskMutation()
+const isFormValid = computed(() => {
+    return (
+        formData.fullName.trim() !== '' &&
+        formData.email.trim() !== '' &&
+        formData.department.trim() !== '' &&
+        formData.role.trim() !== ''
+    );
+});
 
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case 'low':
-      return 'bg-green-500'
-    case 'medium':
-      return 'bg-yellow-500'
-    case 'high':
-      return 'bg-red-500'
-    default:
-      return 'bg-gray-400'
-  }
-}
 
-const getPriorityText = (priority: string) => {
-  switch (priority) {
-    case 'low':
-      return 'Low Priority'
-    case 'medium':
-      return 'Medium Priority'
-    case 'high':
-      return 'High Priority'
-    default:
-      return 'Select priority'
-  }
-}
+
+const { mutate: saveTeamMember, isPending } = useSaveTeamMemberMutation();
+
 
 const handleSubmit = () => {
-  if (!formData.title || !formData.description || !formData.assignee || !formData.dueDate) {
+  if (!isFormValid.value) {
+    console.error('All required fields must be filled out before submitting.')
     return
   }
 
-  saveTask(formData, {
+  saveTeamMember(formData, {
     onSuccess: () => {
       Object.assign(formData, initialFormData)
-      emit('close')
+      emit('close');
     },
-    onError: (error) => {},
-  })
+    onError: (error: any) => {
+      console.error('Failed to save team member:', error);
+    },
+  });
 }
 </script>
