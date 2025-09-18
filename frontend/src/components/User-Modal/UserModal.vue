@@ -95,8 +95,12 @@
           <Button type="button" variant="outline" @click="$emit('close')" class="hover:bg-blue-500">
             Cancel
           </Button>
-          <Button type="submit" class="bg-gray-400 text-white hover:bg-gray-300">
-            Create Task
+          <Button
+            type="submit"
+            class="bg-gray-400 text-white hover:bg-gray-300"
+            :disabled="isPending"
+          >
+            {{ isPending ? 'Saving...' : 'Create Task' }}
           </Button>
         </div>
       </form>
@@ -125,10 +129,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { useSaveTaskMutation } from '@/data/mutations/useSaveTaskMutation'
 import type { DateValue } from '@internationalized/date'
 import { CalendarIcon } from 'lucide-vue-next'
-import { reactive, watch } from 'vue'
-import { useSaveTaskMutation } from '@/data/mutations/useSaveTaskMutation';
+import { reactive } from 'vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -136,15 +140,17 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const formData = reactive({
+const initialFormData = {
   title: '',
   description: '',
   assignee: '',
   priority: 'medium',
   dueDate: undefined as DateValue | undefined,
-})
+}
 
-const { mutate: saveTask, isPending } = useSaveTaskMutation();
+const formData = reactive({ ...initialFormData })
+
+const { mutate: saveTask, isPending } = useSaveTaskMutation()
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
@@ -172,35 +178,17 @@ const getPriorityText = (priority: string) => {
   }
 }
 
-watch(
-  () => props.isOpen,
-  (newVal) => {
-    if (newVal) {
-      Object.assign(formData, {
-        title: '',
-        description: '',
-        assignee: '',
-        priority: 'medium',
-        dueDate: undefined,
-      })
-    }
-  },
-)
-
 const handleSubmit = () => {
   if (!formData.title || !formData.description || !formData.assignee || !formData.dueDate) {
-    console.error('All required fields must be filled out.')
     return
   }
 
   saveTask(formData, {
     onSuccess: () => {
-      console.log('Task saved successfully!');
-      emit('close');
+      Object.assign(formData, initialFormData)
+      emit('close')
     },
-    onError: (error) => {
-      console.error('Failed to save task:', error);
-    },
-  });
+    onError: (error) => {},
+  })
 }
 </script>
