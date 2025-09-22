@@ -67,14 +67,14 @@
           </div>
         </div>
 
-        <h2 class="text-lg font-semibold border-b pb-2">Availability</h2>
+        <!-- <h2 class="text-lg font-semibold border-b pb-2">Availability</h2>
         <div class="flex items-center justify-between">
           <div>
             <Label>Currently Available</Label>
             <p class="text-sm text-gray-500">Toggle to set initial availability status</p>
           </div>
           <Switch v-model:checked="formData.isAvailable" />
-        </div>
+        </div> -->
 
         <div class="flex justify-end space-x-3 pt-4 border-t">
           <Button type="button" variant="outline" @click="$emit('close')">Cancel</Button>
@@ -141,7 +141,6 @@ const { mutate: saveTeamMember, isPending } = useSaveTeamMemberMutation();
 
 const handleSubmit = () => {
   if (!isFormValid.value) {
-    console.error('All required fields must be filled out before submitting.')
     return
   }
 
@@ -151,7 +150,6 @@ const handleSubmit = () => {
       emit('close');
     },
     onError: (error: any) => {
-      console.error('Failed to save team member:', error);
     },
   });
 }

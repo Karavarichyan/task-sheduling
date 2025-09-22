@@ -5,7 +5,6 @@ export const getTasks = () => {
     const tasksString = localStorage.getItem(TASKS_STORAGE_KEY);
     return tasksString ? JSON.parse(tasksString) : [];
   } catch (error) {
-    console.error('Failed to retrieve tasks from localStorage:', error);
     return [];
   }
 };
@@ -24,7 +23,6 @@ export const saveTask = (taskData: any) => {
     localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
     return newTask;
   } catch (error) {
-    console.error('Failed to save task to localStorage:', error);
     return null;
   }
 };
