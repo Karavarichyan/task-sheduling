@@ -16,7 +16,7 @@
           </Button>
           <Button variant="outline" size="sm" @click="isExpanded = !isExpanded">
             <Filter class="h-4 w-4 mr-1" />
-            {{ isExpanded ? "Hide" : "Show" }} Filters
+            {{ isExpanded ? 'Hide' : 'Show' }} Filters
           </Button>
         </div>
       </div>
@@ -24,11 +24,13 @@
 
     <CardContent class="space-y-4">
       <div class="relative">
-        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+        <Search
+          class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4"
+        />
         <Input
           placeholder="Search tasks by title, description, or assignee..."
           :model-value="filters.searchTerm"
-          @update:model-value="(value: string) => updateFilter('searchTerm', value)"
+          @update:model-value="(value) => updateFilter('searchTerm', value as string)"
           class="pl-10"
         />
       </div>
@@ -37,7 +39,10 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div class="space-y-2">
             <Label>Status</Label>
-            <Select :model-value="filters.status" @update:model-value="(value) => updateFilter('status', value)">
+            <Select
+              :model-value="filters.status"
+              @update:model-value="(value) => updateFilter('status', value)"
+            >
               <SelectTrigger>
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
@@ -52,7 +57,10 @@
 
           <div class="space-y-2">
             <Label>Priority</Label>
-            <Select :model-value="filters.priority" @update:model-value="(value) => updateFilter('priority', value)">
+            <Select
+              :model-value="filters.priority"
+              @update:model-value="(value) => updateFilter('priority', value)"
+            >
               <SelectTrigger>
                 <SelectValue placeholder="All Priorities" />
               </SelectTrigger>
@@ -67,13 +75,20 @@
 
           <div class="space-y-2">
             <Label>Assignee</Label>
-            <Select :model-value="filters.assignee" @update:model-value="(value) => updateFilter('assignee', value)">
+            <Select
+              :model-value="filters.assignee"
+              @update:model-value="(value) => updateFilter('assignee', value)"
+            >
               <SelectTrigger>
                 <SelectValue placeholder="All Assignees" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Assignees</SelectItem>
-                <SelectItem v-for="assignee in availableAssignees" :key="assignee" :value="assignee">
+                <SelectItem
+                  v-for="assignee in availableAssignees"
+                  :key="assignee"
+                  :value="assignee"
+                >
                   {{ assignee }}
                 </SelectItem>
               </SelectContent>
@@ -82,7 +97,10 @@
 
           <div class="space-y-2">
             <Label>Department</Label>
-            <Select :model-value="filters.department" @update:model-value="(value) => updateFilter('department', value)">
+            <Select
+              :model-value="filters.department"
+              @update:model-value="(value) => updateFilter('department', value)"
+            >
               <SelectTrigger>
                 <SelectValue placeholder="All Departments" />
               </SelectTrigger>
@@ -101,13 +119,15 @@
               <PopoverTrigger as-child>
                 <Button
                   variant="outline"
-                  :class="cn(
-                    'w-full justify-start text-left font-normal',
-                    !filters.dateFrom && 'text-muted-foreground',
-                  )"
+                  :class="
+                    cn(
+                      'w-full justify-start text-left font-normal',
+                      !filters.dateFrom && 'text-muted-foreground',
+                    )
+                  "
                 >
                   <CalendarIcon class="mr-2 h-4 w-4" />
-                  {{ filters.dateFrom ? format(filters.dateFrom, "PPP") : "Select date" }}
+                  {{ filters.dateFrom ? format(filters.dateFrom, 'PPP') : 'Select date' }}
                 </Button>
               </PopoverTrigger>
               <PopoverContent class="w-auto p-0" align="start">
@@ -127,13 +147,15 @@
               <PopoverTrigger as-child>
                 <Button
                   variant="outline"
-                  :class="cn(
-                    'w-full justify-start text-left font-normal',
-                    !filters.dateTo && 'text-muted-foreground',
-                  )"
+                  :class="
+                    cn(
+                      'w-full justify-start text-left font-normal',
+                      !filters.dateTo && 'text-muted-foreground',
+                    )
+                  "
                 >
                   <CalendarIcon class="mr-2 h-4 w-4" />
-                  {{ filters.dateTo ? format(filters.dateTo, "PPP") : "Select date" }}
+                  {{ filters.dateTo ? format(filters.dateTo, 'PPP') : 'Select date' }}
                 </Button>
               </PopoverTrigger>
               <PopoverContent class="w-auto p-0" align="start">
@@ -178,10 +200,7 @@
 
           <Badge v-if="filters.dateFrom || filters.dateTo" variant="outline" class="gap-1">
             Date Range
-            <X
-              class="h-3 w-3 cursor-pointer"
-              @click="clearDateFilters"
-            />
+            <X class="h-3 w-3 cursor-pointer" @click="clearDateFilters" />
           </Badge>
         </div>
       </div>
@@ -190,23 +209,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue'
-import {
-  Card, CardContent, CardHeader, CardTitle,
-} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select'
-import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Badge } from '@/components/ui/badge'
-import { CalendarIcon, Search, Filter, X } from 'lucide-vue-next'
-import { format } from 'date-fns'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-
+import { format } from 'date-fns'
+import { CalendarIcon, Filter, Search, X } from 'lucide-vue-next'
+import { computed, reactive, ref } from 'vue'
 
 interface SearchFilters {
   searchTerm: string
@@ -217,7 +237,6 @@ interface SearchFilters {
   dateFrom: Date | undefined
   dateTo: Date | undefined
 }
-
 
 interface AdvancedSearchProps {
   availableAssignees: string[]
@@ -230,7 +249,6 @@ const emit = defineEmits<{
   (e: 'on-filters-change', filters: SearchFilters): void
 }>()
 
-
 const filters = reactive<SearchFilters>({
   searchTerm: '',
   status: 'all',
@@ -242,12 +260,13 @@ const filters = reactive<SearchFilters>({
 })
 const isExpanded = ref(false)
 
-
 const updateFilter = (key: keyof SearchFilters, value: any) => {
-  (filters as any)[key] = value
+
+  const finalValue = typeof value === 'number' ? String(value) : value
+
+  ;(filters as any)[key] = finalValue
   emit('on-filters-change', { ...filters })
 }
-
 const clearFilters = () => {
   const clearedFilters: SearchFilters = {
     searchTerm: '',
@@ -263,8 +282,8 @@ const clearFilters = () => {
 }
 
 const clearDateFilters = () => {
-    updateFilter('dateFrom', undefined);
-    updateFilter('dateTo', undefined);
+  updateFilter('dateFrom', undefined)
+  updateFilter('dateTo', undefined)
 }
 
 const getActiveFiltersCount = (): number => {
