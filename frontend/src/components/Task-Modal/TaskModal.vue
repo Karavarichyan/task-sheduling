@@ -2,8 +2,8 @@
   <Dialog :open="isOpen" @update:open="$emit('close')">
     <DialogContent class="sm:max-w-[600px]">
       <DialogHeader>
-        <DialogTitle>Create New Task</DialogTitle>
-        <DialogDescription> Fill in the details to create a new task. </DialogDescription>
+        <DialogTitle>{{ dialogTitle }}</DialogTitle>
+        <DialogDescription>{{ dialogDescription }}</DialogDescription>
       </DialogHeader>
 
       <form @submit.prevent="handleSubmit" class="space-y-6">
@@ -27,7 +27,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label for="assignee">Assign To *</Label>
-              <Select v-model="formData.assignee">
+              <Select v-model="formData.assignee" required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select team member" />
                 </SelectTrigger>
@@ -81,33 +81,41 @@
               <PopoverTrigger asChild>
                 <Button variant="outline" class="w-full justify-start text-left font-normal">
                   <CalendarIcon class="mr-2 h-4 w-4" />
-                  <span>{{ formData.dueDate ? formData.dueDate.toString() : 'Pick a date' }}</span>
+                  <span>{{ formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : 'Pick a date' }}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent class="w-auto p-0" align="start">
-                <Calendar mode="single" v-model="formData.dueDate as DateValue | undefined" />
+<Calendar v-model="selectedDate" />
               </PopoverContent>
             </Popover>
           </div>
         </div>
 
-        <div class="flex justify-end space-x-3 pt-4 border-t">
-          <Button type="button" variant="outline" @click="$emit('close')" class="hover:bg-blue-500">
-            Cancel
-          </Button>
+        <div class="flex justify-between space-x-3 pt-4 border-t">
           <Button
-            type="submit"
-            class="bg-gray-400 text-white hover:bg-gray-300"
-            :disabled="isPending"
+            v-if="isEditMode"
+            type="button"
+            variant="destructive"
+            @click="handleDelete"
+            :disabled="isSubmitting"
+            class="bg-red-600 hover:bg-red-700"
           >
-            {{ isPending ? 'Saving...' : 'Create Task' }}
+            {{ isDeleting ? 'Deleting...' : 'Delete Task' }}
           </Button>
+
+          <div class="flex justify-end space-x-3 ml-auto">
+            <Button type="button" variant="outline" @click="$emit('close')">Cancel</Button>
+            <Button
+              type="submit"
+              :disabled="isSubmitting || !isFormValid"
+              class="bg-blue-600 text-white hover:bg-blue-700"
+            >{{ submitButtonText }}</Button>
+          </div>
         </div>
       </form>
     </DialogContent>
   </Dialog>
 </template>
-
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -129,29 +137,116 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { useSaveTaskMutation } from '@/data/mutations/useSaveTaskMutation'
-import type { DateValue } from '@internationalized/date'
-import { CalendarIcon } from 'lucide-vue-next'
-import { reactive } from 'vue'
 
+// Мутации
+import { useSaveTaskMutation } from '@/data/mutations/useSaveTaskMutation'
+import { useUpdateTaskMutation } from '@/data/mutations/useUpdateTaskMutation'
+import { useDeleteTaskMutation } from '@/data/mutations/useDeleteTaskMutation'
+
+import { CalendarIcon } from 'lucide-vue-next'
+import { ref, computed, watch } from 'vue'
+
+// ✅ Берём DateValue как универсальный тип для v-model Calendar
+// import { parseDate } from '@internationalized/date'
+import type { DateValue } from '@internationalized/date'
+import { parseDate, type CalendarDate } from '@internationalized/date'
+
+// --- Props & Emits ---
 const props = defineProps<{
   isOpen: boolean
+  initialData: any | null
 }>()
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'success'])
 
+// --- Вспомогательная функция для преобразования типов ---
+/**
+ * Преобразует строку даты (YYYY-MM-DD) в DateValue.
+ */
+const toCalendarDate = (dateString: string | null | undefined): DateValue | undefined => {
+  if (!dateString) return undefined
+  try {
+    return parseDate(dateString) as DateValue // 👈 важный каст
+  } catch {
+    return undefined
+  }
+}
+
+// --- Инициализация данных ---
 const initialFormData = {
   title: '',
   description: '',
   assignee: '',
   priority: 'medium',
-  dueDate: undefined as DateValue | undefined,
+  dueDate: null as string | null, // храним дату как строку 'YYYY-MM-DD'
 }
 
-const formData = reactive({ ...initialFormData })
+const formData = ref({ ...initialFormData })
 
-const { mutate: saveTask, isPending } = useSaveTaskMutation()
+// ✅ selectedDate объявлен только один раз
+const selectedDate = ref<DateValue | undefined>(undefined)
 
+// --- Мутации ---
+const { mutate: saveTask, isPending: isAdding } = useSaveTaskMutation()
+const { mutate: updateTask, isPending: isUpdating } = useUpdateTaskMutation()
+const { mutate: deleteTask, isPending: isDeleting } = useDeleteTaskMutation()
+
+// --- Computed ---
+const isEditMode = computed(() => !!props.initialData)
+const dialogTitle = computed(() => (isEditMode.value ? 'Edit Task' : 'Create New Task'))
+const dialogDescription = computed(() =>
+  isEditMode.value ? 'Update the details for this task.' : 'Fill in the details to create a new task.'
+)
+const isSubmitting = computed(() => isAdding.value || isUpdating.value || isDeleting.value)
+const submitButtonText = computed(() => {
+  if (isSubmitting.value) {
+    return isEditMode.value ? 'Updating Task...' : 'Creating Task...'
+  }
+  return isEditMode.value ? 'Update Task' : 'Create Task'
+})
+
+const isFormValid = computed(() => {
+  return (
+    formData.value.title.trim() !== '' &&
+    formData.value.description.trim() !== '' &&
+    formData.value.assignee.trim() !== '' &&
+    !!formData.value.dueDate
+  )
+})
+
+// --- Watchers ---
+// синхронизируем initialData -> formData при открытии
+watch(
+  () => [props.initialData, props.isOpen],
+  ([newInitialData, newIsOpen]) => {
+    if (newIsOpen) {
+      if (newInitialData) {
+        formData.value = { ...newInitialData }
+        selectedDate.value = toCalendarDate(newInitialData.dueDate)
+      } else {
+        formData.value = { ...initialFormData }
+        selectedDate.value = undefined
+      }
+    } else {
+      formData.value = { ...initialFormData }
+      selectedDate.value = undefined
+    }
+  },
+  { immediate: true }
+)
+
+// синхронизируем selectedDate -> formData.dueDate
+watch(selectedDate, (newDate) => {
+  if (newDate) {
+    const s = newDate.toString()
+    // берём только YYYY-MM-DD (без времени/зоны)
+    formData.value.dueDate = s.includes('T') ? s.split('T')[0] : s
+  } else {
+    formData.value.dueDate = null
+  }
+})
+
+// --- Priority helpers ---
 const getPriorityColor = (priority: string) => {
   switch (priority) {
     case 'low':
@@ -178,17 +273,46 @@ const getPriorityText = (priority: string) => {
   }
 }
 
+// --- Handlers ---
 const handleSubmit = () => {
-  if (!formData.title || !formData.description || !formData.assignee || !formData.dueDate) {
+  if (!isFormValid.value || isSubmitting.value) {
     return
   }
 
-  saveTask(formData, {
+  const dataToSend = isEditMode.value
+    ? { ...formData.value, id: props.initialData.id }
+    : formData.value
+
+  const mutationHandler = isEditMode.value ? updateTask : saveTask
+
+  mutationHandler(dataToSend, {
     onSuccess: () => {
-      Object.assign(formData, initialFormData)
+      emit('success')
       emit('close')
     },
-    onError: (error) => {},
+    onError: (error: any) => {
+      console.error(`Failed to ${isEditMode.value ? 'update' : 'save'} task:`, error)
+    },
+  })
+}
+
+const handleDelete = () => {
+  if (!props.initialData || isSubmitting.value) {
+    return
+  }
+
+  if (!confirm('Are you sure you want to delete this task?')) {
+    return
+  }
+
+  deleteTask(props.initialData.id, {
+    onSuccess: () => {
+      emit('success')
+      emit('close')
+    },
+    onError: (error: any) => {
+      console.error('Failed to delete task:', error)
+    },
   })
 }
 </script>
