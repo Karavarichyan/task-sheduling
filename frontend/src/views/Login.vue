@@ -9,15 +9,16 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
 import * as z from 'zod'
-const formSchema = toTypedSchema(
-  z.object({
-    email: z.string().email(),
-    password: z.string().min(1),
-  }),
-)
 
-const form = useForm({
-  validationSchema: formSchema,
+const formSchema = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string().min(1, "Password is required"),
+})
+
+type FormSchema = z.infer<typeof formSchema>
+
+const form = useForm<FormSchema>({
+  validationSchema: toTypedSchema(formSchema),
   initialValues: {
     email: '',
     password: '',
@@ -47,25 +48,27 @@ const onSubmit = form.handleSubmit(async (values) => {
         </CardHeader>
         <CardContent>
           <form class="space-y-4" @submit="onSubmit">
-            <FormField v-slot="{ componentField }" name="email">
+            <FormField v-slot="{ componentField, errorMessage }" name="email">
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" required v-bind="componentField" />
+                  <Input type="email" v-bind="componentField" />
                 </FormControl>
-                <FormMessage />
+                <FormMessage>{{ errorMessage }}</FormMessage>
               </FormItem>
             </FormField>
-            <FormField v-slot="{ componentField }" name="password">
+
+            <FormField v-slot="{ componentField, errorMessage }" name="password">
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" required v-bind="componentField" />
+                  <Input type="password" v-bind="componentField" />
                 </FormControl>
-                <FormMessage />
+                <FormMessage>{{ errorMessage }}</FormMessage>
               </FormItem>
             </FormField>
-            <Button type="submit"> Submit </Button>
+
+            <Button type="submit" class="w-full"> Submit </Button>
           </form>
         </CardContent>
       </Card>
