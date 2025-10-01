@@ -9,10 +9,9 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
 import * as z from 'zod'
-
 const formSchema = z.object({
-  email: z.string().email("Invalid email"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email('Invalid email'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 type FormSchema = z.infer<typeof formSchema>
@@ -33,7 +32,6 @@ const onSubmit = form.handleSubmit(async (values) => {
     email: values.email,
     password: values.password,
   })
-
   router.push({ name: 'board' })
 })
 </script>
@@ -47,7 +45,7 @@ const onSubmit = form.handleSubmit(async (values) => {
           <CardDescription class="text-center">Sign in to your admin dashboard</CardDescription>
         </CardHeader>
         <CardContent>
-          <form class="space-y-4" @submit="onSubmit">
+          <form class="space-y-4" @submit.prevent="onSubmit">
             <FormField v-slot="{ componentField, errorMessage }" name="email">
               <FormItem>
                 <FormLabel>Email</FormLabel>
