@@ -81,11 +81,16 @@
               <PopoverTrigger asChild>
                 <Button variant="outline" class="w-full justify-start text-left font-normal">
                   <CalendarIcon class="mr-2 h-4 w-4" />
-                  <span>{{ formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : 'Pick a date' }}</span>
+                  <span>{{
+                    formData.dueDate
+                      ? new Date(formData.dueDate).toLocaleDateString()
+                      : 'Pick a date'
+                  }}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent class="w-auto p-0" align="start">
-<Calendar v-model="selectedDate" />
+                <Calendar v-model="selectedDate as DateValue" />
+
               </PopoverContent>
             </Popover>
           </div>
@@ -109,13 +114,15 @@
               type="submit"
               :disabled="isSubmitting || !isFormValid"
               class="bg-blue-600 text-white hover:bg-blue-700"
-            >{{ submitButtonText }}</Button>
+              >{{ submitButtonText }}</Button
+            >
           </div>
         </div>
       </form>
     </DialogContent>
   </Dialog>
 </template>
+
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -138,20 +145,16 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 
-// Мутации
+import { useDeleteTaskMutation } from '@/data/mutations/useDeleteTaskMutation'
 import { useSaveTaskMutation } from '@/data/mutations/useSaveTaskMutation'
 import { useUpdateTaskMutation } from '@/data/mutations/useUpdateTaskMutation'
-import { useDeleteTaskMutation } from '@/data/mutations/useDeleteTaskMutation'
 
 import { CalendarIcon } from 'lucide-vue-next'
-import { ref, computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
-// ✅ Берём DateValue как универсальный тип для v-model Calendar
-// import { parseDate } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
-import { parseDate, type CalendarDate } from '@internationalized/date'
+import { parseDate } from '@internationalized/date'
 
-// --- Props & Emits ---
 const props = defineProps<{
   isOpen: boolean
   initialData: any | null
@@ -159,43 +162,37 @@ const props = defineProps<{
 
 const emit = defineEmits(['close', 'success'])
 
-// --- Вспомогательная функция для преобразования типов ---
-/**
- * Преобразует строку даты (YYYY-MM-DD) в DateValue.
- */
 const toCalendarDate = (dateString: string | null | undefined): DateValue | undefined => {
   if (!dateString) return undefined
   try {
-    return parseDate(dateString) as DateValue // 👈 важный каст
+    return parseDate(dateString) as DateValue
   } catch {
     return undefined
   }
 }
 
-// --- Инициализация данных ---
 const initialFormData = {
   title: '',
   description: '',
   assignee: '',
   priority: 'medium',
-  dueDate: null as string | null, // храним дату как строку 'YYYY-MM-DD'
+  dueDate: null as string | null,
 }
 
 const formData = ref({ ...initialFormData })
 
-// ✅ selectedDate объявлен только один раз
 const selectedDate = ref<DateValue | undefined>(undefined)
 
-// --- Мутации ---
 const { mutate: saveTask, isPending: isAdding } = useSaveTaskMutation()
 const { mutate: updateTask, isPending: isUpdating } = useUpdateTaskMutation()
 const { mutate: deleteTask, isPending: isDeleting } = useDeleteTaskMutation()
 
-// --- Computed ---
 const isEditMode = computed(() => !!props.initialData)
 const dialogTitle = computed(() => (isEditMode.value ? 'Edit Task' : 'Create New Task'))
 const dialogDescription = computed(() =>
-  isEditMode.value ? 'Update the details for this task.' : 'Fill in the details to create a new task.'
+  isEditMode.value
+    ? 'Update the details for this task.'
+    : 'Fill in the details to create a new task.',
 )
 const isSubmitting = computed(() => isAdding.value || isUpdating.value || isDeleting.value)
 const submitButtonText = computed(() => {
@@ -214,8 +211,6 @@ const isFormValid = computed(() => {
   )
 })
 
-// --- Watchers ---
-// синхронизируем initialData -> formData при открытии
 watch(
   () => [props.initialData, props.isOpen],
   ([newInitialData, newIsOpen]) => {
@@ -232,21 +227,13 @@ watch(
       selectedDate.value = undefined
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
-// синхронизируем selectedDate -> formData.dueDate
 watch(selectedDate, (newDate) => {
-  if (newDate) {
-    const s = newDate.toString()
-    // берём только YYYY-MM-DD (без времени/зоны)
-    formData.value.dueDate = s.includes('T') ? s.split('T')[0] : s
-  } else {
-    formData.value.dueDate = null
-  }
+  formData.value.dueDate = newDate ? newDate.toString() : null
 })
 
-// --- Priority helpers ---
 const getPriorityColor = (priority: string) => {
   switch (priority) {
     case 'low':
@@ -273,7 +260,6 @@ const getPriorityText = (priority: string) => {
   }
 }
 
-// --- Handlers ---
 const handleSubmit = () => {
   if (!isFormValid.value || isSubmitting.value) {
     return
