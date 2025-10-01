@@ -12,7 +12,7 @@ import z from 'zod'
 
 const formSchema = toTypedSchema(
   z.object({
-    email: z.email(),
+    email: z.string().email(), 
     password: z.string().min(1),
   }),
 )
