@@ -8,11 +8,10 @@ import { useLoginMutation } from '@/data/mutations/login'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
-import z from 'zod'
-
+import * as z from 'zod'
 const formSchema = toTypedSchema(
   z.object({
-    email: z.string().email(), 
+    email: z.string().email(),
     password: z.string().min(1),
   }),
 )
