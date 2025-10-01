@@ -9,6 +9,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
 import * as z from 'zod'
+
 const formSchema = z.object({
   email: z.string().email('Invalid email'),
   password: z.string().min(1, 'Password is required'),
@@ -66,7 +67,7 @@ const onSubmit = form.handleSubmit(async (values) => {
               </FormItem>
             </FormField>
 
-            <Button type="submit" class="w-full"> Submit </Button>
+            <Button type="submit" class="w-full">Submit</Button>
           </form>
         </CardContent>
       </Card>
