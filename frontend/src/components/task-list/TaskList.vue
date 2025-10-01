@@ -45,7 +45,7 @@
         <CardContent class="py-4">
           <div class="flex items-center justify-between text-sm">
             <span class="text-muted-foreground">
-              Showing **{{ filteredTasks.length }}** of {{ tasks.length }} tasks
+              Showing {{ filteredTasks.length }} of {{ tasks.length }} tasks
             </span>
             <div class="flex items-center gap-4">
               <span class="text-muted-foreground">
